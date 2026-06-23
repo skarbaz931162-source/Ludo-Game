@@ -16,7 +16,6 @@ app.use(cors({
     credentials: true
 }));
 
-}));
 
 
 // --- 1. DATABASES MONGODB ATLAS CONNECTION ---
