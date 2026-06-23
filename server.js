@@ -9,6 +9,12 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(express.json());
+app.use(cors({
+    origin: "https://index-html-eight-black.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
+
 
 // --- 1. DATABASES MONGODB ATLAS CONNECTION ---
 const mongoURI = process.env.MONGO_URI;
