@@ -10,11 +10,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-app.use(express.json());
 app.use(cors({
-    origin: "https://index-html-eight-black.vercel.app",
+    origin: "https://index-html-hhej.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
+}));
+
 }));
 
 
