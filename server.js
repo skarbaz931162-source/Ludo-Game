@@ -1,34 +1,41 @@
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
 const app = express();
-app.use(cors());
+
 app.use(express.json());
+app.use(cors());
 
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+// डेटाबेस कनेक्शन
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("Database Connected Successfully"))
+    .catch(err => console.log("DB Connection Error:", err));
 
-// अपना MongoDB Atlas लिंक यहाँ डालें
-mongoose.connect('mongodb+srv://YOUR_DB_LINK_HERE')
-.then(() => console.log("DB Connected!"))
-.catch(err => console.log("DB Error:", err));
-
-// बेसिक स्कीम
-const User = mongoose.model('User', new mongoose.Schema({ username: String, walletBalance: Number }));
-
-io.on('connection', (socket) => {
-    console.log('User Joined: ' + socket.id);
+// डिपॉजिट सेव करने का लॉजिक
+app.post('/api/deposit', async (req, res) => {
+    try {
+        const { amount, player } = req.body;
+        // ये सीधे आपके MongoDB में रिक्वेस्ट सेव कर देगा
+        const db = mongoose.connection.db;
+        await db.collection('deposits').insertOne({
+            amount: amount,
+            player: player,
+            status: 'pending',
+            date: new Date()
+        });
+        res.json({ success: true, message: "Request received!" });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
-// APIs
-app.post('/api/register', async (req, res) => {
-    const newUser = new User({ username: req.body.username, walletBalance: 200 });
-    await newUser.save();
-    res.json({ message: "User Registered" });
+// एडमिन के लिए रिक्वेस्ट देखने का कोड
+app.get('/api/deposits', async (req, res) => {
+    const db = mongoose.connection.db;
+    const requests = await db.collection('deposits').find({}).toArray();
+    res.json(requests);
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log("Server Running on Port 3000"));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
